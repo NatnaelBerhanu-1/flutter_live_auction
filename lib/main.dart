@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:live_auction/core/viewModels/auction_viewmodel.dart';
 import 'package:live_auction/locator.dart';
 import 'package:live_auction/ui/pages/auction_detail_page.dart';
+import 'package:live_auction/ui/pages/home_page.dart';
 import 'package:provider/provider.dart';
 
 void main() async{
@@ -28,9 +29,11 @@ class MyApp extends StatelessWidget {
       onGenerateRoute: (settings) {
         if(settings.name == AuctionDetailPage.pageName){
           return MaterialPageRoute(builder: (context) => AuctionDetailPage());
+        }else if(settings.name == HomePage.pageName){
+          return MaterialPageRoute(builder: (context) => HomePage());
         }
       },
-      home: AuctionDetailPage(),
+      home: HomePage(),
     );
   }
 }

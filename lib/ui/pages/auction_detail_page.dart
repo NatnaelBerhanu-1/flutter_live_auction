@@ -5,6 +5,7 @@ import 'package:flutter_countdown_timer/flutter_countdown_timer.dart';
 import 'package:live_auction/constants.dart';
 import 'package:live_auction/core/models/auction.dart';
 import 'package:live_auction/core/viewModels/auction_viewmodel.dart';
+import 'package:live_auction/ui/shared/owner_widget.dart';
 import 'package:provider/provider.dart';
 import 'package:readmore/readmore.dart';
 
@@ -42,7 +43,7 @@ class _AuctionDetailPage extends State<AuctionDetailPage> {
                       children: [
                         _backButton(),
                         SizedBox(
-                          height: 15.0,
+                          height: 25.0,
                         ),
                         _coverSection(context, auction),
                         SizedBox(
@@ -120,7 +121,9 @@ class _AuctionDetailPage extends State<AuctionDetailPage> {
 
   _backButton() {
     return GestureDetector(
-      onTap: () {},
+      onTap: () {
+        Navigator.pop(context);
+      },
       child: Icon(Icons.arrow_back, color: kBlackColor),
     );
   }
@@ -242,7 +245,7 @@ class _AuctionDetailPage extends State<AuctionDetailPage> {
         SizedBox(
           height: 15.0,
         ),
-        _ownerWidget(auction),
+        OwnerWidget(auction: auction),
         SizedBox(
           height: 15.0,
         ),
@@ -264,37 +267,6 @@ class _AuctionDetailPage extends State<AuctionDetailPage> {
           lessStyle: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
           style: TextStyle(fontSize: 16.0, color: Colors.black54),
         ),
-      ],
-    );
-  }
-
-  _ownerWidget(Auction auction) {
-    return Row(
-      children: [
-        CircleAvatar(
-          radius: 22,
-          backgroundImage: NetworkImage(auction.ownerProfilePicUrl),
-          backgroundColor: Colors.black12,
-        ),
-        SizedBox(
-          width: 10,
-        ),
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              "Owner",
-              style: TextStyle(color: Colors.black54),
-            ),
-            SizedBox(
-              height: 5.0,
-            ),
-            Text(
-              auction.ownerName,
-              style: TextStyle(fontWeight: FontWeight.w500, fontSize: 16),
-            )
-          ],
-        )
       ],
     );
   }
