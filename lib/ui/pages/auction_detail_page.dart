@@ -1,7 +1,11 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_countdown_timer/current_remaining_time.dart';
 import 'package:flutter_countdown_timer/flutter_countdown_timer.dart';
 import 'package:live_auction/constants.dart';
+import 'package:live_auction/core/models/auction.dart';
+import 'package:live_auction/core/viewModels/auction_viewmodel.dart';
+import 'package:provider/provider.dart';
 import 'package:readmore/readmore.dart';
 
 class AuctionDetailPage extends StatefulWidget {
@@ -17,39 +21,52 @@ class _AuctionDetailPage extends State<AuctionDetailPage> {
 
   @override
   Widget build(BuildContext context) {
+    final auctionProvider = Provider.of<AuctionViewModel>(context, listen: false);
     return Scaffold(
       backgroundColor: kBackgroundColorLight,
       body: SafeArea(
-        child: Stack(
-          children: [
-            SingleChildScrollView(
-              child: Container(
-                padding: const EdgeInsets.only(
-                    left: 20.0, right: 20.0, top: 20.0, bottom: 120.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _backButton(),
-                    SizedBox(
-                      height: 15.0,
+        child: StreamBuilder(
+          stream: auctionProvider.getAuctionAsStream("RtiyvrTaDBEtBvq9n7gc"),
+          builder: (context, AsyncSnapshot<DocumentSnapshot> snapshot) {
+            if(snapshot.hasData){
+              Auction auction = Auction.fromJson(snapshot.data!.data() as Map<String, dynamic>);
+              print(auction);
+            return Stack(
+              children: [
+                SingleChildScrollView(
+                  child: Container(
+                    padding: const EdgeInsets.only(
+                        left: 20.0, right: 20.0, top: 20.0, bottom: 120.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _backButton(),
+                        SizedBox(
+                          height: 15.0,
+                        ),
+                        _coverSection(context, auction),
+                        SizedBox(
+                          height: 15.0,
+                        ),
+                        _detailSection(context, auction),
+                      ],
                     ),
-                    _coverSection(context),
-                    SizedBox(
-                      height: 15.0,
-                    ),
-                    _detailSection(context),
-                  ],
+                  ),
                 ),
-              ),
-            ),
-            _footerSection(),
-          ],
+                _footerSection(auction),
+              ],
+            );
+            }
+          else{
+            return Center(child: CircularProgressIndicator(color: kAccentColor,));
+          }
+          },
         ),
       ),
     );
   }
 
-  _footerSection() {
+  _footerSection(Auction auction) {
     return Positioned(
       bottom: 0,
       child: Container(
@@ -77,7 +94,7 @@ class _AuctionDetailPage extends State<AuctionDetailPage> {
             ),
             Spacer(),
             TextButton(onPressed: () {
-              showModalBottomSheet(context: context, builder: (context) => _placeBidModal(context), isScrollControlled: true);
+              showModalBottomSheet(context: context, builder: (context) => _placeBidModal(context, auction), isScrollControlled: true);
             }, child: Container(
               padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10.0),
               decoration: BoxDecoration(
@@ -108,18 +125,20 @@ class _AuctionDetailPage extends State<AuctionDetailPage> {
     );
   }
 
-  _coverSection(BuildContext context) {
+  _coverSection(BuildContext context, Auction auction) {
     return Stack(
       children: [
         Container(
           height: 350,
           width: kScreenWidth(context),
           decoration: BoxDecoration(
-              color: kAccentColor, borderRadius: BorderRadius.circular(20.0)),
+              color: Colors.black12, borderRadius: BorderRadius.circular(20.0)),
           child: ClipRRect(
               borderRadius: BorderRadius.circular(20.0),
-              child: Image.asset(
-                "assets/images/sample_art_two.jpg",
+              child: Image.network(
+                auction.auctionPicUrl,
+                filterQuality: FilterQuality.none,
+                errorBuilder: (context, error, stackTrace) => Center(child: Text("Couldn't load image.")),
                 fit: BoxFit.cover,
               )),
         ),
@@ -133,14 +152,14 @@ class _AuctionDetailPage extends State<AuctionDetailPage> {
               color: kCoverImageTagBgColor,
             ),
             child: Text(
-              "Art",
+              auction.category,
               style:
                   TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
             ),
           ),
         ),
         Positioned(
-          child: _coverBottomSection(),
+          child: _coverBottomSection(auction),
           bottom: 20,
           width: kScreenWidth(context) - 40,
         ),
@@ -148,7 +167,7 @@ class _AuctionDetailPage extends State<AuctionDetailPage> {
     );
   }
 
-  Widget _coverBottomSection() {
+  Widget _coverBottomSection(Auction auction) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20.0),
       child: Row(
@@ -156,7 +175,7 @@ class _AuctionDetailPage extends State<AuctionDetailPage> {
         mainAxisSize: MainAxisSize.max,
         children: [
           CountdownTimer(
-            endTime: _endTime,
+            endTime: auction.deadline.microsecondsSinceEpoch,
             widgetBuilder: (_, CurrentRemainingTime? time) => Container(
               decoration: BoxDecoration(
                   color: time == null ? kRedColor : kAccentColorBright,
@@ -211,19 +230,19 @@ class _AuctionDetailPage extends State<AuctionDetailPage> {
     );
   }
 
-  _detailSection(BuildContext context) {
+  _detailSection(BuildContext context, Auction auction) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          "Abstract Liquid",
+          auction.title,
           style: TextStyle(
               color: Colors.black, fontSize: 20.0, fontWeight: FontWeight.w500),
         ),
         SizedBox(
           height: 15.0,
         ),
-        _ownerWidget(),
+        _ownerWidget(auction),
         SizedBox(
           height: 15.0,
         ),
@@ -235,7 +254,7 @@ class _AuctionDetailPage extends State<AuctionDetailPage> {
           height: 15.0,
         ),
         ReadMoreText(
-          "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Quisque et nisl nibh. In in nunc viverra tortor dignissim malesuada eu vitae augue. Cras eu quam eget augue pretium condimentum. Suspendisse potenti. Curabitur id risus hendrerit, viverra ipsum tempus, volutpat metus. Quisque pellentesque erat a interdum laoreet.",
+          auction.description,
           trimLines: 2,
           trimMode: TrimMode.Line,
           colorClickableText: Colors.black,
@@ -249,12 +268,13 @@ class _AuctionDetailPage extends State<AuctionDetailPage> {
     );
   }
 
-  _ownerWidget() {
+  _ownerWidget(Auction auction) {
     return Row(
       children: [
         CircleAvatar(
           radius: 22,
-          backgroundImage: AssetImage("assets/images/sample_face.jpg"),
+          backgroundImage: NetworkImage(auction.ownerProfilePicUrl),
+          backgroundColor: Colors.black12,
         ),
         SizedBox(
           width: 10,
@@ -270,7 +290,7 @@ class _AuctionDetailPage extends State<AuctionDetailPage> {
               height: 5.0,
             ),
             Text(
-              "Jenny Wilson",
+              auction.ownerName,
               style: TextStyle(fontWeight: FontWeight.w500, fontSize: 16),
             )
           ],
@@ -279,7 +299,7 @@ class _AuctionDetailPage extends State<AuctionDetailPage> {
     );
   }
 
-  _placeBidModal(BuildContext context) {
+  _placeBidModal(BuildContext context, Auction auction) {
     return Container(
       color: Colors.white,
       padding: MediaQuery.of(context).viewInsets,
@@ -304,13 +324,13 @@ class _AuctionDetailPage extends State<AuctionDetailPage> {
                       height: 10.0,
                     ),
                     Text(
-                      "1.44 ETH",
+                      "${auction.currentBid} ETH",
                       style: TextStyle(fontSize: 22.0, fontWeight: FontWeight.bold),
                     )
                   ],
                 ),
                 Text(
-                  "11 Bids",
+                  "${auction.totalBids} Bids",
                   style: TextStyle(fontSize: 16.0, color: Colors.black54),
                 ),
               ],
