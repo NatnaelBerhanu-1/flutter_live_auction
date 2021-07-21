@@ -2,12 +2,16 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_countdown_timer/current_remaining_time.dart';
 import 'package:flutter_countdown_timer/flutter_countdown_timer.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:live_auction/constants.dart';
 import 'package:live_auction/core/models/auction.dart';
 import 'package:live_auction/core/viewModels/auction_viewmodel.dart';
 import 'package:live_auction/ui/shared/owner_widget.dart';
 import 'package:provider/provider.dart';
 import 'package:readmore/readmore.dart';
+import 'package:shimmer/shimmer.dart';
+
+import 'cover_image_view_page.dart';
 
 class AuctionDetailPage extends StatefulWidget {
   static final String pageName = "auctionDetail";
@@ -18,50 +22,206 @@ class AuctionDetailPage extends StatefulWidget {
 }
 
 class _AuctionDetailPage extends State<AuctionDetailPage> {
-  int _endTime = DateTime.now().millisecondsSinceEpoch + 1000 * 30;
+
+  double bidAmount = 0;
 
   @override
   Widget build(BuildContext context) {
-    final auctionProvider = Provider.of<AuctionViewModel>(context, listen: false);
+    final auctionProvider =
+        Provider.of<AuctionViewModel>(context, listen: false);
     return Scaffold(
       backgroundColor: kBackgroundColorLight,
       body: SafeArea(
         child: StreamBuilder(
+          /// Embedded the document id for demo purpose
           stream: auctionProvider.getAuctionAsStream("RtiyvrTaDBEtBvq9n7gc"),
           builder: (context, AsyncSnapshot<DocumentSnapshot> snapshot) {
-            if(snapshot.hasData){
-              Auction auction = Auction.fromJson(snapshot.data!.data() as Map<String, dynamic>);
+            if (snapshot.hasData) {
+              Auction auction = Auction.fromJson(
+                  snapshot.data!.data() as Map<String, dynamic>);
               print(auction);
-            return Stack(
-              children: [
-                SingleChildScrollView(
-                  child: Container(
-                    padding: const EdgeInsets.only(
-                        left: 20.0, right: 20.0, top: 20.0, bottom: 120.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        _backButton(),
-                        SizedBox(
-                          height: 25.0,
-                        ),
-                        _coverSection(context, auction),
-                        SizedBox(
-                          height: 15.0,
-                        ),
-                        _detailSection(context, auction),
-                      ],
+              return Stack(
+                children: [
+                  SingleChildScrollView(
+                    child: Container(
+                      padding: const EdgeInsets.only(
+                          left: 20.0, right: 20.0, top: 20.0, bottom: 120.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          _backButton(),
+                          SizedBox(
+                            height: 25.0,
+                          ),
+                          _coverSection(context, auction),
+                          SizedBox(
+                            height: 15.0,
+                          ),
+                          _detailSection(context, auction),
+                        ],
+                      ),
                     ),
                   ),
-                ),
-                _footerSection(auction),
-              ],
-            );
+                  _footerSection(auction),
+                ],
+              );
+            } else {
+              return _loadingWidget(context);
             }
-          else{
-            return Center(child: CircularProgressIndicator(color: kAccentColor,));
-          }
           },
+        ),
+      ),
+    );
+  }
+
+  _loadingWidget(context) {
+    return SingleChildScrollView(
+      child: Container(
+        padding: const EdgeInsets.only(
+            left: 20.0, right: 20.0, top: 20.0, bottom: 120.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _backButton(),
+            SizedBox(
+              height: 25.0,
+            ),
+            Shimmer.fromColors(
+              baseColor: Colors.black26,
+              highlightColor: Colors.black12,
+              direction: ShimmerDirection.ltr,
+              enabled: true,
+              child: Container(
+                width: kScreenWidth(context),
+                height: 350,
+                decoration: BoxDecoration(
+                    color: Colors.black26,
+                    borderRadius: BorderRadius.circular(20.0)),
+              ),
+            ),
+            SizedBox(
+              height: 10.0,
+            ),
+            // _detailSection(context, auction),
+            Shimmer.fromColors(
+              baseColor: Colors.black26,
+              highlightColor: Colors.black12,
+              direction: ShimmerDirection.ltr,
+              enabled: true,
+              child: Container(
+                width: kScreenWidth(context) / 2,
+                height: 40,
+                decoration: BoxDecoration(
+                    color: Colors.black26,
+                    borderRadius: BorderRadius.circular(10.0)),
+              ),
+            ),
+            SizedBox(
+              height: 15.0,
+            ),
+            Row(
+              children: [
+                Shimmer.fromColors(
+                  baseColor: Colors.black26,
+                  highlightColor: Colors.black12,
+                  direction: ShimmerDirection.ltr,
+                  enabled: true,
+                  child: Container(
+                    width: 40,
+                    height: 40,
+                    decoration: BoxDecoration(
+                        color: Colors.black26,
+                        borderRadius: BorderRadius.circular(30.0)),
+                  ),
+                ),
+                SizedBox(
+                  width: 10,
+                ),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Shimmer.fromColors(
+                      baseColor: Colors.black26,
+                      highlightColor: Colors.black12,
+                      direction: ShimmerDirection.ltr,
+                      enabled: true,
+                      child: Container(
+                        width: 60,
+                        height: 10,
+                        decoration: BoxDecoration(
+                            color: Colors.black26,
+                            borderRadius: BorderRadius.circular(5.0)),
+                      ),
+                    ),
+                    SizedBox(
+                      height: 10,
+                    ),
+                    Shimmer.fromColors(
+                      baseColor: Colors.black26,
+                      highlightColor: Colors.black12,
+                      direction: ShimmerDirection.ltr,
+                      enabled: true,
+                      child: Container(
+                        width: 110,
+                        height: 10,
+                        decoration: BoxDecoration(
+                            color: Colors.black26,
+                            borderRadius: BorderRadius.circular(5.0)),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+            SizedBox(
+              height: 20,
+            ),
+            Shimmer.fromColors(
+              baseColor: Colors.black26,
+              highlightColor: Colors.black12,
+              direction: ShimmerDirection.ltr,
+              enabled: true,
+              child: Container(
+                width: 150,
+                height: 25,
+                decoration: BoxDecoration(
+                    color: Colors.black26,
+                    borderRadius: BorderRadius.circular(5.0)),
+              ),
+            ),
+            SizedBox(
+              height: 20,
+            ),
+            Shimmer.fromColors(
+              baseColor: Colors.black26,
+              highlightColor: Colors.black12,
+              direction: ShimmerDirection.ltr,
+              enabled: true,
+              child: Container(
+                width: kScreenWidth(context),
+                height: 15,
+                decoration: BoxDecoration(
+                    color: Colors.black26,
+                    borderRadius: BorderRadius.circular(5.0)),
+              ),
+            ),
+            SizedBox(
+              height: 10,
+            ),
+            Shimmer.fromColors(
+              baseColor: Colors.black26,
+              highlightColor: Colors.black12,
+              direction: ShimmerDirection.ltr,
+              enabled: true,
+              child: Container(
+                width: kScreenWidth(context) / 2,
+                height: 15,
+                decoration: BoxDecoration(
+                    color: Colors.black26,
+                    borderRadius: BorderRadius.circular(5.0)),
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -94,25 +254,34 @@ class _AuctionDetailPage extends State<AuctionDetailPage> {
               ],
             ),
             Spacer(),
-            TextButton(onPressed: () {
-              showModalBottomSheet(context: context, builder: (context) => _placeBidModal(context, auction), isScrollControlled: true);
-            }, child: Container(
-              padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10.0),
-              decoration: BoxDecoration(
-                color: kBlackColor,
-                borderRadius: BorderRadius.circular(50.0)
+            TextButton(
+              onPressed: () {
+                showModalBottomSheet(
+                    context: context,
+                    builder: (context) => _placeBidModal(context, auction),
+                    isScrollControlled: true);
+              },
+              child: Container(
+                padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10.0),
+                decoration: BoxDecoration(
+                    color: kBlackColor,
+                    borderRadius: BorderRadius.circular(50.0)),
+                child: Text(
+                  "Place a Bid",
+                  style: TextStyle(
+                      fontWeight: FontWeight.w500,
+                      fontSize: 22.0,
+                      color: Colors.white),
+                ),
               ),
-              child: Text("Place a Bid", style: TextStyle(fontWeight: FontWeight.w500, fontSize: 22.0, color: Colors.white),),
-            ),style: ButtonStyle(
-              padding: MaterialStateProperty.all<EdgeInsetsGeometry>(
-               EdgeInsets.zero
-              ),
-                shape: MaterialStateProperty.all<RoundedRectangleBorder>(
-                    RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(50.0),
-                    )
-                )
-            ),)
+              style: ButtonStyle(
+                  padding: MaterialStateProperty.all<EdgeInsetsGeometry>(
+                      EdgeInsets.zero),
+                  shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+                      RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(50.0),
+                  ))),
+            )
           ],
         ),
       ),
@@ -136,14 +305,18 @@ class _AuctionDetailPage extends State<AuctionDetailPage> {
           width: kScreenWidth(context),
           decoration: BoxDecoration(
               color: Colors.black12, borderRadius: BorderRadius.circular(20.0)),
-          child: ClipRRect(
-              borderRadius: BorderRadius.circular(20.0),
-              child: Image.network(
-                auction.auctionPicUrl,
-                filterQuality: FilterQuality.none,
-                errorBuilder: (context, error, stackTrace) => Center(child: Text("Couldn't load image.")),
-                fit: BoxFit.cover,
-              )),
+          child: Hero(
+            tag: auction.auctionPicUrl,
+            child: ClipRRect(
+                borderRadius: BorderRadius.circular(20.0),
+                child: Image.network(
+                  auction.auctionPicUrl,
+                  filterQuality: FilterQuality.none,
+                  errorBuilder: (context, error, stackTrace) =>
+                      Center(child: Text("Couldn't load image.")),
+                  fit: BoxFit.cover,
+                )),
+          ),
         ),
         Positioned(
           top: 20,
@@ -184,26 +357,24 @@ class _AuctionDetailPage extends State<AuctionDetailPage> {
                   color: time == null ? kRedColor : kAccentColorBright,
                   borderRadius: BorderRadius.circular(20.0)),
               padding: EdgeInsets.symmetric(horizontal: 10.0, vertical: 5.0),
-              child:
-                  time == null ?
-                    Text('Closed',
+              child: time == null
+                  ? Text(
+                      'Closed',
                       style: TextStyle(
                           color: Colors.white,
                           fontWeight: FontWeight.bold,
-                          fontSize: 18.0),)
-                  :
-                  Text(
-                    "${time.hours != null ? time.hours : '00'} : ${time.min != null ? time.min : '00'} : ${time.sec != null ? time.sec : '00'}",
-                    style: TextStyle(
-                        color: kTextBlackColor,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 18.0),
-                  ),
+                          fontSize: 18.0),
+                    )
+                  : Text(
+                      "${time.hours != null ? time.hours : '00'} : ${time.min != null ? time.min : '00'} : ${time.sec != null ? time.sec : '00'}",
+                      style: TextStyle(
+                          color: kTextBlackColor,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 18.0),
+                    ),
             ),
-            onEnd: (){
-              setState(() {
-
-              });
+            onEnd: () {
+              setState(() {});
             },
           ),
           Row(
@@ -212,7 +383,13 @@ class _AuctionDetailPage extends State<AuctionDetailPage> {
               SizedBox(width: 10),
               _coverFloatingBtn(icon: Icons.ios_share),
               SizedBox(width: 10),
-              _coverFloatingBtn(icon: Icons.fullscreen_rounded),
+              GestureDetector(
+                child: _coverFloatingBtn(icon: Icons.fullscreen_rounded),
+                onTap: () {
+                  Navigator.pushNamed(context, CoverImageViewPage.pageName,
+                      arguments: auction.auctionPicUrl);
+                },
+              ),
             ],
           )
         ],
@@ -220,7 +397,7 @@ class _AuctionDetailPage extends State<AuctionDetailPage> {
     );
   }
 
-  _coverFloatingBtn({IconData? icon}) {
+  Widget _coverFloatingBtn({IconData? icon}) {
     return Container(
       padding: EdgeInsets.all(5.0),
       decoration: BoxDecoration(
@@ -263,6 +440,7 @@ class _AuctionDetailPage extends State<AuctionDetailPage> {
           colorClickableText: Colors.black,
           trimCollapsedText: "Read More",
           trimExpandedText: "Read Less",
+          delimiter: "...",
           moreStyle: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
           lessStyle: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
           style: TextStyle(fontSize: 16.0, color: Colors.black54),
@@ -297,7 +475,8 @@ class _AuctionDetailPage extends State<AuctionDetailPage> {
                     ),
                     Text(
                       "${auction.currentBid} ETH",
-                      style: TextStyle(fontSize: 22.0, fontWeight: FontWeight.bold),
+                      style: TextStyle(
+                          fontSize: 22.0, fontWeight: FontWeight.bold),
                     )
                   ],
                 ),
@@ -307,40 +486,63 @@ class _AuctionDetailPage extends State<AuctionDetailPage> {
                 ),
               ],
             ),
-            SizedBox(height: 10,),
+            SizedBox(
+              height: 10,
+            ),
             Divider(),
-            SizedBox(height: 10,),
+            SizedBox(
+              height: 10,
+            ),
             Text(
               "Your Bid",
               style: TextStyle(fontSize: 16.0, color: Colors.black54),
             ),
-            SizedBox(height: 10,),
+            SizedBox(
+              height: 10,
+            ),
             TextFormField(
+              keyboardType: TextInputType.number,
+              onChanged: (value){
+                bidAmount = double.parse(value);
+              },
               decoration: InputDecoration(
-                hintText: "ETH 1.45",
-                enabledBorder: OutlineInputBorder(
-                  borderSide: BorderSide(
-                    color: kBackgroundColorLight
-                  )
-                ),
-                focusedBorder: OutlineInputBorder(
-                    borderSide: BorderSide(
-                        color: kAccentColor
-                    )
-                )
-              ),
+                  hintText: "ETH 1.45",
+                  enabledBorder: OutlineInputBorder(
+                      borderSide: BorderSide(color: kBlackColor.withOpacity(.5))),
+                  focusedBorder: OutlineInputBorder(
+                      borderSide: BorderSide(color: kAccentColor))),
             ),
             SizedBox(
               height: 10,
             ),
-            Container(
-              height:60.0,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(5.0),
-                color: Colors.black87
-              ),
-              child: Center(
-                child: Text("SUBMIT BID", style: TextStyle(color: Colors.white, fontSize: 18.0, fontWeight: FontWeight.bold),),
+            GestureDetector(
+              onTap: () async{
+                if(bidAmount < auction.currentBid){
+                  EasyLoading.showError("You bid lower than\nthe current bid.", duration: Duration(seconds: 2), maskType: EasyLoadingMaskType.black,dismissOnTap: false,);
+                  return;
+                }
+                /// Mocking placing bid
+                EasyLoading.show(status: "Placing your bid", maskType: EasyLoadingMaskType.black, dismissOnTap: false);
+                await Future.delayed(Duration(seconds: 4));
+                EasyLoading.dismiss();
+                Navigator.pop(context);
+                EasyLoading.showSuccess("Completed", duration: Duration(seconds: 1), maskType: EasyLoadingMaskType.black,dismissOnTap: false,);
+
+              },
+              child: Container(
+                height: 60.0,
+                decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(5.0),
+                    color: Colors.black87),
+                child: Center(
+                  child: Text(
+                    "SUBMIT BID",
+                    style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 18.0,
+                        fontWeight: FontWeight.bold),
+                  ),
+                ),
               ),
             )
           ],

@@ -30,7 +30,7 @@ class Api{
     return ref.add(data);
   }
   Future<void> updateDocument(Map<String, dynamic> data , String id) {
-    return ref.doc(id).update(data) ;
+    return ref.doc(id).update(data);
   }
 
 }

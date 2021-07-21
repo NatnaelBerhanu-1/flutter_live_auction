@@ -16,6 +16,8 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+
+  /// Mock data's for UI
   List<String> categories = ["Art", "Music", "Gaming", "Sport", "Other"];
 
   List<Seller> sellers = [
@@ -50,6 +52,7 @@ class _HomePageState extends State<HomePage> {
     )
   ];
 
+  /// holds the active category name
   late String _activeCat;
 
   @override
